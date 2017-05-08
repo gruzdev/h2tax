@@ -159,15 +159,6 @@ Func FillDiv($sDate, $fGross, $fWithheld, $sSecDesc, _
   ControlSetText($g_sTitleMain, "", "[CLASS:TMaskedEdit; INSTANCE:2]", FloatToStringRus($fWithheld))
 EndFunc
 
-Func FindAndSelectInListView($sTitle, $sCtrl, $sStringToSelect)
-  Local $iIndex = ControlListView($sTitle, "", $sCtrl, "FindItem" , $sStringToSelect)
-  if $iIndex = -1 Then
-    SetError(1)
-    Return
-  Endif
-  ControlListView($sTitle, "", $sCtrl, "Select" , $iIndex)
-EndFunc
-
 Func OpenListViewThenFindAndSelectNumber($sTitleParent, $sCtrlButtonOpen, $sTitleLv, $iNumberToSelect)
   ; Нажимаю кнопку вызова списка.
   ControlClick($sTitleParent, "", $sCtrlButtonOpen)
