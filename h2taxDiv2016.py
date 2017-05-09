@@ -32,13 +32,14 @@ from datetime import datetime
 from time import sleep
 import sys
 import ctypes
+import os
 
 # Налоговый период.
 YEAR = 2016
 # Исполняемый файл программы Декларация.
 DECL_BINARY = "Decl{}.exe".format(YEAR)
 # Полный путь к программе.
-PATH = u"C:\Program Files\Декларация {}\{}".format(YEAR, DECL_BINARY)
+PATH = u"{}\Декларация {}\{}".format(os.environ['PROGRAMFILES'], YEAR, DECL_BINARY)
 # Заголовок основного окна программы.
 TITLE_MAIN = u"Без имени - Декларация 2016"
 # Координаты кнопки "Доходы за пределами РФ".
