@@ -41,7 +41,7 @@ DECL_BINARY = "Decl{}.exe".format(YEAR)
 # Полный путь к программе.
 PATH = u"{}\Декларация {}\{}".format(os.environ['PROGRAMFILES'], YEAR, DECL_BINARY)
 # Заголовок основного окна программы.
-TITLE_MAIN = u"Без имени - Декларация 2016"
+TITLE_MAIN = u"Без имени - Декларация {}".format(YEAR)
 # Координаты кнопки "Доходы за пределами РФ".
 X_XRUS, Y_XRUS = 98, 414
 # Координаты кнопки "Добавить источник выплат".
