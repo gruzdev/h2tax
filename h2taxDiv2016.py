@@ -224,6 +224,7 @@ def open_decl():
 
 
 def float_to_string_rus(val):
+    # Преобразую число в строку, заменяю точку на запятую.
     return str(val).replace(".", ",")
 
 
