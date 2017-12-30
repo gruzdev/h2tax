@@ -85,6 +85,9 @@ def main():
     fill_div("2017-05-30", 18, 0, desc, source, country)
     # ...
 
+    # Вывожу итог по году.
+    stats_print()
+
 
 def fill_div(date, gross, withheld, sec_desc,
              source=DEFAULT_INCOME_SOURCE,
@@ -151,6 +154,36 @@ def fill_div(date, gross, withheld, sec_desc,
     autoit.control_set_text(TITLE_MAIN, "[CLASS:TMaskedEdit; INSTANCE:3]", float_to_string_rus(gross))
     # Заполняю "Налог, уплаченный в иностранном государстве" - "В иностранной валюте".
     autoit.control_set_text(TITLE_MAIN, "[CLASS:TMaskedEdit; INSTANCE:2]", float_to_string_rus(withheld))
+    # Сохраняю данные для подсчёта итога по году.
+    stats_update(source, currency, gross, withheld)
+
+
+def stats_update(source, currency, gross, withheld):
+    if not hasattr(stats_update, "stats"):
+        stats_update.stats = {}
+    s = stats_update.stats
+    if source not in s:
+        s[source] = {}
+    if currency not in s[source]:
+        s[source][currency] = {}
+    if 'gross' not in s[source][currency]:
+        s[source][currency]['gross'] = 0
+    if 'withheld' not in s[source][currency]:
+        s[source][currency]['withheld'] = 0
+    s[source][currency]['gross'] += gross
+    s[source][currency]['withheld'] += withheld
+    stats_update.stats = s
+
+
+def stats_print():
+    s = stats_update.stats
+    print u'Итог', YEAR
+    for source in s:
+        print u'  Источник:', source
+        for currency in s[source]:
+            print u'    Код валюты:', currency
+            print u'      Доход:', s[source][currency]['gross']
+            print u'      Удержано:', s[source][currency]['withheld']
 
 
 def open_listview_then_find_and_select_number(title_parent, ctrl_button_open, title_lv, number_to_select):
