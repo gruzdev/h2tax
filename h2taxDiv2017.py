@@ -34,6 +34,7 @@ from time import sleep
 import sys
 import ctypes
 import os
+from decimal import Decimal
 
 # Налоговый период.
 YEAR = 2017
@@ -152,9 +153,9 @@ def fill_div(date, gross, withheld, sec_desc,
     except ValueError:
         sys.exit(u"Неизвестный код дохода: {}".format(INCOME_TYPE_DIVIDENDS))
     # Заполняю "Полученный доход" - "В иностранной валюте"
-    autoit.control_set_text(TITLE_MAIN, "[CLASS:TMaskedEdit; INSTANCE:3]", float_to_string_rus(gross))
+    autoit.control_set_text(TITLE_MAIN, "[CLASS:TMaskedEdit; INSTANCE:3]", str_rus(gross))
     # Заполняю "Налог, уплаченный в иностранном государстве" - "В иностранной валюте".
-    autoit.control_set_text(TITLE_MAIN, "[CLASS:TMaskedEdit; INSTANCE:2]", float_to_string_rus(withheld))
+    autoit.control_set_text(TITLE_MAIN, "[CLASS:TMaskedEdit; INSTANCE:2]", str_rus(withheld))
     # Сохраняю данные для подсчёта итога по году.
     stats_update(source, currency, gross, withheld)
 
@@ -168,11 +169,11 @@ def stats_update(source, currency, gross, withheld):
     if currency not in s[source]:
         s[source][currency] = {}
     if "gross" not in s[source][currency]:
-        s[source][currency]["gross"] = 0
-    s[source][currency]["gross"] += gross
+        s[source][currency]["gross"] = Decimal()
+    s[source][currency]["gross"] += Decimal(str(gross))
     if "withheld" not in s[source][currency]:
-        s[source][currency]["withheld"] = 0
-    s[source][currency]["withheld"] += withheld
+        s[source][currency]["withheld"] = Decimal()
+    s[source][currency]["withheld"] += Decimal(str(withheld))
     stats_update.stats = s
 
 
@@ -183,8 +184,8 @@ def stats_print():
         print(u"  Источник:", source)
         for currency in s[source]:
             print(u"    Код валюты:", currency)
-            print(u"      Доход:", s[source][currency]["gross"])
-            print(u"      Удержано:", s[source][currency]["withheld"])
+            print(u"      Доход:", str_rus(s[source][currency]["gross"]))
+            print(u"      Удержано:", str_rus(s[source][currency]["withheld"]))
 
 
 def open_listview_then_find_and_select_number(title_parent, ctrl_button_open, title_lv, number_to_select):
@@ -261,7 +262,7 @@ def open_decl():
     autoit.win_wait_active(TITLE_MAIN)
 
 
-def float_to_string_rus(val):
+def str_rus(val):
     # Преобразую число в строку, заменяю точку на запятую.
     return str(val).replace(".", ",")
 
