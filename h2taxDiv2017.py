@@ -40,7 +40,7 @@ YEAR = 2017
 # Исполняемый файл программы Декларация.
 DECL_BINARY = "Decl{}.exe".format(YEAR)
 # Полный путь к программе.
-PATH = u"{}\АО ГНИВЦ\Декларация {}\{}".format(os.environ['PROGRAMFILES'], YEAR, DECL_BINARY)
+PATH = u"{}\АО ГНИВЦ\Декларация {}\{}".format(os.environ["PROGRAMFILES"], YEAR, DECL_BINARY)
 # Заголовок основного окна программы.
 TITLE_MAIN = u"Без имени - Декларация {}".format(YEAR)
 # Координаты кнопки "Доходы за пределами РФ".
@@ -167,12 +167,12 @@ def stats_update(source, currency, gross, withheld):
         s[source] = {}
     if currency not in s[source]:
         s[source][currency] = {}
-    if 'gross' not in s[source][currency]:
-        s[source][currency]['gross'] = 0
-    if 'withheld' not in s[source][currency]:
-        s[source][currency]['withheld'] = 0
-    s[source][currency]['gross'] += gross
-    s[source][currency]['withheld'] += withheld
+    if "gross" not in s[source][currency]:
+        s[source][currency]["gross"] = 0
+    s[source][currency]["gross"] += gross
+    if "withheld" not in s[source][currency]:
+        s[source][currency]["withheld"] = 0
+    s[source][currency]["withheld"] += withheld
     stats_update.stats = s
 
 
@@ -212,6 +212,8 @@ def set_datetime_picker(title, ctrl, day, month, year):
     delay_s = 0.1
     # Если дата в элементе вводится не первый раз, то фокус будет на годе.
     # Нажимаю два раза стрелку влево, чтобы установить фокус на день.
+    if not hasattr(set_datetime_picker, "calls"):
+        set_datetime_picker.calls = 0
     set_datetime_picker.calls += 1
     if set_datetime_picker.calls > 2:
         autoit.control_send(title, ctrl, "{LEFT}")
@@ -229,7 +231,6 @@ def set_datetime_picker(title, ctrl, day, month, year):
     sleep(delay_s)
     autoit.control_send(title, ctrl, str(year))
     sleep(delay_s)
-set_datetime_picker.calls = 0
 
 
 def open_decl():
@@ -265,5 +266,5 @@ def float_to_string_rus(val):
     return str(val).replace(".", ",")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
