@@ -26,6 +26,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
+from __future__ import print_function
 import autoit
 from autoit import properties
 from datetime import datetime
@@ -177,13 +178,13 @@ def stats_update(source, currency, gross, withheld):
 
 def stats_print():
     s = stats_update.stats
-    print u'Итог', YEAR
+    print(u"Итог", YEAR)
     for source in s:
-        print u'  Источник:', source
+        print(u"  Источник:", source)
         for currency in s[source]:
-            print u'    Код валюты:', currency
-            print u'      Доход:', s[source][currency]['gross']
-            print u'      Удержано:', s[source][currency]['withheld']
+            print(u"    Код валюты:", currency)
+            print(u"      Доход:", s[source][currency]["gross"])
+            print(u"      Удержано:", s[source][currency]["withheld"])
 
 
 def open_listview_then_find_and_select_number(title_parent, ctrl_button_open, title_lv, number_to_select):
