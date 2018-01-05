@@ -48,6 +48,8 @@ TITLE_MAIN = u"Без имени - Декларация {}".format(YEAR)
 X_XRUS, Y_XRUS = 98, 414
 # Координаты кнопки "Добавить источник выплат".
 X_ADD_SRC, Y_ADD_SRC = 206, 113
+# Максимальное возможное количество символов в наименовании источника выплаты.
+INCOME_SRC_TEXT_LIMIT = 94
 # Источник выплаты дохода по умолчанию.
 DEFAULT_INCOME_SOURCE = u"Брокер \"XXX\" (США)"
 # Код страны по умолчанию (США).
@@ -126,6 +128,7 @@ def fill_div(date, gross, withheld, sec_desc,
     autoit.win_wait_active(title_income)
     # Заполняю "Наименование источника выплаты"
     income_src = u"{} Дивиденд от {} {}".format(source, dt.strftime("%d.%m.%Y"), sec_desc)
+    income_src = income_src[:INCOME_SRC_TEXT_LIMIT]
     autoit.control_set_text(title_income, "[CLASS:TMaskedEdit; INSTANCE:2]", income_src)
     # Заполняю "Код страны".
     try:
