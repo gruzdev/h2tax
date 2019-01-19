@@ -60,6 +60,10 @@ DEFAULT_CURRENCY_CODE = 840
 INCOME_TYPE_DIVIDENDS = 1010
 # Код дохода "Проценты (за исключением процентов по облигациям с ипотечным покрытием, эмитированным до 01.01.2007)"
 INCOME_TYPE_INTEREST = 1011
+# Код дохода "(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)".
+INCOME_TYPE_STOCK_SELL = 1530
+# Код вычета "Расходы по операциям с ЦБ (обращ-ся на орг. рынке ЦБ)".
+DEDUCTION_TYPE_STOCK_EXPENSES = 201
 
 
 def main():
@@ -92,7 +96,7 @@ def main():
     stats_print()
 
 
-def fill_income(income_type, desc, desc_ext, date, gross, withheld, source, country, currency):
+def fill_income(income_type, desc, desc_ext, date, gross, withheld, ded, ded_type, source, country, currency):
     # Проверяю, что строка с описанием источника не пустая.
     if source == "":
         sys.exit(u"Не задано описание источника выплаты")
@@ -105,6 +109,13 @@ def fill_income(income_type, desc, desc_ext, date, gross, withheld, source, coun
     # Проверяю, что удержано меньше, чем поступило.
     if withheld >= gross:
         sys.exit(u"Удержано больше(равно), чем поступило: {}".format(withheld))
+    # Проверяю правильность величины вычета и кода вычета.
+    if ded is None and ded_type is not None:
+        sys.exit(u"Не указана величина вычета.")
+    if ded is not None and ded_type is None:
+        sys.exit(u"Не указан код вычета.")
+    if ded is not None and ded <= 0:
+        sys.exit(u"Отрицательная или нулевая величина вычета.")
     # Проверяю, что дата - существующая.
     try:
         dt = datetime.strptime(date, "%Y-%m-%d")
@@ -154,6 +165,16 @@ def fill_income(income_type, desc, desc_ext, date, gross, withheld, source, coun
         sys.exit(u"Неизвестный код дохода: {}".format(income_type))
     # Заполняю "Полученный доход" - "В иностранной валюте"
     autoit.control_set_text(TITLE_MAIN, "[CLASS:TMaskedEdit; INSTANCE:4]", str_rus(gross))
+    # Заполняю "Вычеты".
+    if ded is not None:
+        control = "[CLASS:TButton; INSTANCE:1]"
+        if autoit.control_command(TITLE_MAIN, control, "IsEnabled") == 0:
+            sys.exit(u"К указанному виду дохода вычеты неприменимы")
+        try:
+            open_listview_then_find_and_select_number(TITLE_MAIN, control, u"Справочник видов вычетов", ded_type)
+        except ValueError:
+            sys.exit(u"Неизвестный код вычета: {}".format(ded_type))
+        autoit.control_set_text(TITLE_MAIN, "[CLASS:TMaskedEdit; INSTANCE:2]", str_rus(ded))
     # Заполняю "Налог, уплаченный в иностранном государстве" - "В иностранной валюте".
     autoit.control_set_text(TITLE_MAIN, "[CLASS:TMaskedEdit; INSTANCE:3]", str_rus(withheld))
     # Сохраняю данные для подсчёта итога по году.
@@ -168,7 +189,9 @@ def fill_div(date, gross, withheld, sec_desc,
     income_type = INCOME_TYPE_DIVIDENDS
     desc = u"Дивиденд"
     desc_ext = sec_desc
-    fill_income(income_type, desc, desc_ext, date, gross, withheld, source, country, currency)
+    ded = None
+    ded_type = None
+    fill_income(income_type, desc, desc_ext, date, gross, withheld, ded, ded_type, source, country, currency)
 
 
 def fill_interest(date, gross,
@@ -180,7 +203,22 @@ def fill_interest(date, gross,
     desc = u"Проценты на остаток денежных средств"
     desc_ext = None
     withheld = 0
-    fill_income(income_type, desc, desc_ext, date, gross, withheld, source, country, currency)
+    ded = None
+    ded_type = None
+    fill_income(income_type, desc, desc_ext, date, gross, withheld, ded, ded_type, source, country, currency)
+
+
+def fill_stocksell(date, gross, ded, trade_desc,
+                   source=DEFAULT_INCOME_SOURCE,
+                   country=DEFAULT_COUNTRY_CODE,
+                   currency=DEFAULT_CURRENCY_CODE
+                   ):
+    income_type = INCOME_TYPE_STOCK_SELL
+    desc = u"По сделкам " + trade_desc
+    desc_ext = None
+    withheld = 0
+    ded_type = DEDUCTION_TYPE_STOCK_EXPENSES
+    fill_income(income_type, desc, desc_ext, date, gross, withheld, ded, ded_type, source, country, currency)
 
 
 def stats_update(source, currency, gross, withheld):
