@@ -58,6 +58,8 @@ DEFAULT_COUNTRY_CODE = 840
 DEFAULT_CURRENCY_CODE = 840
 # Код дохода "Дивиденды".
 INCOME_TYPE_DIVIDENDS = 1010
+# Код дохода "Проценты (за исключением процентов по облигациям с ипотечным покрытием, эмитированным до 01.01.2007)"
+INCOME_TYPE_INTEREST = 1011
 
 
 def main():
@@ -81,15 +83,16 @@ def main():
     # ...
     fill_div("2018-12-28", 19.83, 1.98, desc)
 
+    # Ввод данных о процентах на остаток денежных средств.
+    fill_interest("2018-01-31", 0.89)
+    # ...
+    fill_interest("2018-12-31", 0.98)
+
     # Вывожу итог по году.
     stats_print()
 
 
-def fill_div(date, gross, withheld, sec_desc,
-             source=DEFAULT_INCOME_SOURCE,
-             country=DEFAULT_COUNTRY_CODE,
-             currency=DEFAULT_CURRENCY_CODE
-             ):
+def fill_income(income_type, desc, desc_ext, date, gross, withheld, source, country, currency):
     # Проверяю, что строка с описанием источника не пустая.
     if source == "":
         sys.exit(u"Не задано описание источника выплаты")
@@ -119,7 +122,9 @@ def fill_div(date, gross, withheld, sec_desc,
     title_income = u"Доход"
     autoit.win_wait_active(title_income)
     # Заполняю "Наименование источника выплаты"
-    income_src = u"{} Дивиденд от {} {}".format(source, dt.strftime("%d.%m.%Y"), sec_desc)
+    income_src = u"{} {} от {}".format(source, desc, dt.strftime("%d.%m.%Y"))
+    if desc_ext is not None:
+        income_src += " " + desc_ext
     income_src = income_src[:INCOME_SRC_TEXT_LIMIT]
     autoit.control_set_text(title_income, "[CLASS:TMaskedEdit; INSTANCE:2]", income_src)
     # Заполняю "Код страны".
@@ -144,15 +149,38 @@ def fill_div(date, gross, withheld, sec_desc,
     autoit.control_click(TITLE_MAIN, "[CLASS:TCheckBox; INSTANCE:1]")
     # Заполняю "Код дохода".
     try:
-        open_listview_then_find_and_select_number(TITLE_MAIN, "[CLASS:TButton; INSTANCE:2]", u"Справочник видов доходов", INCOME_TYPE_DIVIDENDS)
+        open_listview_then_find_and_select_number(TITLE_MAIN, "[CLASS:TButton; INSTANCE:2]", u"Справочник видов доходов", income_type)
     except ValueError:
-        sys.exit(u"Неизвестный код дохода: {}".format(INCOME_TYPE_DIVIDENDS))
+        sys.exit(u"Неизвестный код дохода: {}".format(income_type))
     # Заполняю "Полученный доход" - "В иностранной валюте"
     autoit.control_set_text(TITLE_MAIN, "[CLASS:TMaskedEdit; INSTANCE:4]", str_rus(gross))
     # Заполняю "Налог, уплаченный в иностранном государстве" - "В иностранной валюте".
     autoit.control_set_text(TITLE_MAIN, "[CLASS:TMaskedEdit; INSTANCE:3]", str_rus(withheld))
     # Сохраняю данные для подсчёта итога по году.
     stats_update(source, currency, gross, withheld)
+
+
+def fill_div(date, gross, withheld, sec_desc,
+             source=DEFAULT_INCOME_SOURCE,
+             country=DEFAULT_COUNTRY_CODE,
+             currency=DEFAULT_CURRENCY_CODE
+             ):
+    income_type = INCOME_TYPE_DIVIDENDS
+    desc = u"Дивиденд"
+    desc_ext = sec_desc
+    fill_income(income_type, desc, desc_ext, date, gross, withheld, source, country, currency)
+
+
+def fill_interest(date, gross,
+                  source=DEFAULT_INCOME_SOURCE,
+                  country=DEFAULT_COUNTRY_CODE,
+                  currency=DEFAULT_CURRENCY_CODE
+                  ):
+    income_type = INCOME_TYPE_INTEREST
+    desc = u"Проценты на остаток денежных средств"
+    desc_ext = None
+    withheld = 0
+    fill_income(income_type, desc, desc_ext, date, gross, withheld, source, country, currency)
 
 
 def stats_update(source, currency, gross, withheld):
